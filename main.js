@@ -57,17 +57,16 @@ function initTasks() {
 }
 
 function displayTasks() {
-  let outputStr = "";
+  tasksEl.innerHTML = "";
   for (let i = 0; i < tasks.length; i++) {
-    outputStr += getTaskHTMLStr(tasks[i], i);
+    tasksEl.appendChild(getTaskHTML(tasks[i], i));
   }
-  tasksEl.innerHTML = outputStr;
 }
 
 function newTask(taskDescription) {
   return {
     description: taskDescription,
-    completed: "",
+    completed: true,
   };
 }
 
@@ -75,25 +74,52 @@ function saveTasks() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-function getTaskHTMLStr(task, index) {
+function getTaskHTML(task, index) {
   // Use JavaScript to build the Task <div>
 
   // Check Box Element
   let checkBoxEl = document.createElement("input");
   checkBoxEl.type = "checkbox";
+  checkBoxEl.dataset.index = index;
+  checkBoxEl.checked = task.completed;
+  checkBoxEl.addEventListener("input", checkBoxHandler);
 
-  // Text Description
-  let textEl = document.createTextNode(task.description);
+  // Task Description Text Node
+  let textSpanEl = document.createElement("span");
+  textSpanEl.innerHTML = task.description;
+  if (task.completed) {
+    textSpanEl.className = "completed";
+  }
 
   // Remove Button
   let buttonEl = document.createElement("button");
   buttonEl.innerHTML = "Remove";
+  buttonEl.dataset.index = index;
+  buttonEl.addEventListener("click", removeBtnHandler);
 
   // Add everything to a div element
   let divEl = document.createElement("div");
   divEl.appendChild(checkBoxEl);
-  divEl.appendChild(textEl);
+  divEl.appendChild(textSpanEl);
   divEl.appendChild(buttonEl);
 
   return divEl;
+}
+
+// Event Functions
+function checkBoxHandler(e) {
+  // Get index of tasks to toggle
+  let taskIndex = +e.target.dataset.index;
+  let task = tasks[taskIndex];
+  task.completed = !task.completed;
+
+  console.log(e.target);
+}
+
+function removeBtnHandler(e) {
+  // Get index of task to remove
+  let taskIndex = +e.target.dataset.index;
+  tasks.splice(taskIndex, 1);
+  saveTasks();
+  displayTasks();
 }
